@@ -1,0 +1,98 @@
+$date
+	Sat Sep 03 21:20:51 2022
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_processing_element $end
+$scope module pe $end
+$var wire 9 ! a_in [8:0] $end
+$var wire 9 " a_out [8:0] $end
+$var wire 1 # clk $end
+$var wire 1 $ mode $end
+$var wire 33 % ps_out [32:0] $end
+$var wire 1 & reset_n $end
+$var wire 9 ' w_in [8:0] $end
+$var parameter 1 ( PEMODE_PS $end
+$var parameter 1 ) PEMODE_WL $end
+$var parameter 32 * WORDWIDTH $end
+$var reg 9 + activation [8:0] $end
+$var reg 33 , partial_sum [32:0] $end
+$var reg 9 - weight [8:0] $end
+$scope begin PSUM_CALC $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1000 *
+0)
+1(
+$end
+#0
+$dumpvars
+bx -
+bx ,
+bx +
+b11 '
+1&
+bx %
+x$
+0#
+bx "
+b10 !
+$end
+#5000000
+b0 %
+b0 ,
+b0 "
+b0 +
+b0 -
+0&
+1#
+#10000000
+0$
+1&
+0#
+#15000000
+b11 -
+1#
+#20000000
+0#
+1$
+#25000000
+b110 %
+b110 ,
+b10 "
+b10 +
+1#
+#30000000
+0#
+#35000000
+b1100 %
+b1100 ,
+1#
+#40000000
+0#
+#45000000
+b10010 %
+b10010 ,
+1#
+#50000000
+0#
+#55000000
+b11000 %
+b11000 ,
+1#
+#60000000
+0#
+#65000000
+b11110 %
+b11110 ,
+1#
+#70000000
+0#
