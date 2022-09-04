@@ -27,11 +27,15 @@ reg clk;
 reg reset_n;
 reg mode;
 
-reg [WORDWIDTH:0]    w_in;
-reg [WORDWIDTH:0]    a_in;
+reg                    enable_in;
+reg [WORDWIDTH-1:0]    w_in;
+reg [WORDWIDTH-1:0]    a_in;
+reg [WORDWIDTH*4-1:0]  ps_in;
 
-wire [WORDWIDTH:0]   a_out;
-wire [WORDWIDTH*4:0] ps_out;
+wire                   enable_out;
+wire [WORDWIDTH-1:0]   w_out;
+wire [WORDWIDTH-1:0]   a_out;
+wire [WORDWIDTH*4-1:0] ps_out;
 
 ProcessingElementWS #(
     .WORDWIDTH(WORDWIDTH)
@@ -40,9 +44,13 @@ ProcessingElementWS #(
     .reset_n(reset_n),
     .mode(mode),
 
+    .enable_in(enable_in),
     .w_in(w_in),
     .a_in(a_in),
-
+    .ps_in(ps_in),
+    
+    .enable_out(enable_out),
+    .w_out(w_out),
     .a_out(a_out),
     .ps_out(ps_out)
 );
@@ -72,9 +80,11 @@ initial begin : PE_TEST
     # HCLOCK_PS
 
     reset_n = 1;
+    enable_in = 1'b1;
     mode = 1'b0;
     # CLOCK_PS
 
+    ps_in = 5;
     mode = 1'b1;
     # CLOCK_PS
     # CLOCK_PS
