@@ -1,4 +1,4 @@
-`include "../systolic_array.v"
+`include "systolic_array.v"
 
 
 /*
