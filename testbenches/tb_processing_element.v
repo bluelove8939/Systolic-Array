@@ -1,4 +1,4 @@
-`include "processing_element.v"
+`include "../processing_element.v"
 
 `timescale 1ns/1ps
 

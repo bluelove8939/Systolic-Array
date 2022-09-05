@@ -42,6 +42,7 @@ always @(posedge clk or negedge reset_n) begin : PSUM_CALC
         weight <= 0;
         activation <= 0;
         partial_sum <= 0;
+        enable_out_reg <= 0;
     end 
     
     else begin
