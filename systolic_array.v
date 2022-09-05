@@ -185,24 +185,7 @@ assign pe_mode = mode;
 always @(posedge clk or negedge reset_n) begin : SA_MAIN
     if (reset_n == 1'b0) begin
         global_ps_in <= 0;
-        // pe_mode <= 1'b0;
-        // act_fifo_enable <= 1'b0;
-        // ps_fifo_enable <= 1'b0;
-        // arr_enable <= 1'b0;
     end
-
-    // else begin
-    //     if (mode == MODE_WL) begin
-    //         pe_mode <= 1'b0;
-    //     end
-
-    //     else if (mode == MODE_PS) begin
-    //         pe_mode <= 1'b1;
-    //         // act_fifo_enable <= 1'b1;
-    //         // ps_fifo_enable <= 1'b1;
-    //         // arr_enable <= 1'b1;
-    //     end
-    // end
 end
 
 endmodule
@@ -227,23 +210,18 @@ module ShiftRegister #(
     output [WORDWIDTH-1:0] out       // output port
 );
 
-reg [WORDWIDTH-1:0] container [0:SIZ-1];
+reg [WORDWIDTH*(SIZ+1)-1:0] container;
 
-assign out[WORDWIDTH-1:0] = container[SIZ-1];  // last register of the container is used as output signal generator
+assign out = container[WORDWIDTH*(SIZ+1)-1:WORDWIDTH*SIZ];  // last register of the container is used as output signal generator
 
 always @(posedge clk or negedge reset_n) begin
     if (reset_n == 1'b0) begin
-        for (integer i = 0; i < SIZ; i = i+1) begin
-            container[i] <= 0;
-        end
+        container <= 0;
     end 
     
     else begin
         if (enable == 1'b1) begin
-            for (integer i = SIZ-1; i > 0; i = i-1) begin
-                container[i] = container[i-1];
-            end
-            container[0] = in;
+            container[WORDWIDTH*(SIZ+1)-1:0] <= {container[WORDWIDTH*SIZ-1:0], in};
         end
     end
 end
