@@ -101,7 +101,7 @@ endgenerate
 
 
 // Generate processing elements
-wire  pe_mode;    // PE mode
+wire pe_mode;     // PE mode
 wire arr_enable;  // PE array enable
 
 wire                   pe_enable_in  [0:ARRHEIGHT*ARRWIDTH-1];  // PE enable input ports
