@@ -59,18 +59,19 @@ genvar act_fifo_idx;
 
 generate
     for (act_fifo_idx = 0; act_fifo_idx < ARRHEIGHT; act_fifo_idx = act_fifo_idx+1) begin
-        ShiftRegister #(
-            .SIZ(act_fifo_idx+1),
-            .WORDWIDTH(WORDWIDTH)
-        ) act_fifo (
-            .clk(clk),
-            .reset_n(reset_n),
-            .enable(act_fifo_enable),
-            .in(act_fifo_in[act_fifo_idx]),
-            .out(act_fifo_out[act_fifo_idx])
-        );
-
-        assign act_fifo_in[act_fifo_idx] = a_in[act_fifo_idx];
+        // ShiftRegister #(
+        //     .SIZ(act_fifo_idx+1),
+        //     .WORDWIDTH(WORDWIDTH)
+        // ) act_fifo (
+        //     .clk(clk),
+        //     .reset_n(reset_n),
+        //     .enable(act_fifo_enable),
+        //     .in(act_fifo_in[act_fifo_idx]),
+        //     .out(act_fifo_out[act_fifo_idx])
+        // );
+        
+        assign act_fifo_out[act_fifo_idx] = act_fifo_in[act_fifo_idx];
+        assign act_fifo_in[act_fifo_idx]  = a_in[act_fifo_idx];
     end
 endgenerate
 
@@ -84,17 +85,18 @@ genvar ps_fifo_idx;
 
 generate
     for (ps_fifo_idx = 0; ps_fifo_idx < ARRWIDTH; ps_fifo_idx = ps_fifo_idx+1) begin
-        ShiftRegister #(
-            .SIZ(ARRWIDTH - ps_fifo_idx),
-            .WORDWIDTH(WORDWIDTH * 4)
-        ) ps_fifo (
-            .clk(clk),
-            .reset_n(reset_n),
-            .enable(ps_fifo_enable),
-            .in(ps_fifo_in[ps_fifo_idx]),
-            .out(ps_fifo_out[ps_fifo_idx])
-        );
+        // ShiftRegister #(
+        //     .SIZ(ARRWIDTH - ps_fifo_idx),
+        //     .WORDWIDTH(WORDWIDTH * 4)
+        // ) ps_fifo (
+        //     .clk(clk),
+        //     .reset_n(reset_n),
+        //     .enable(ps_fifo_enable),
+        //     .in(ps_fifo_in[ps_fifo_idx]),
+        //     .out(ps_fifo_out[ps_fifo_idx])
+        // );
 
+        assign ps_fifo_out[ps_fifo_idx] = ps_fifo_in[ps_fifo_idx];
         assign ps_out[ps_fifo_idx] = ps_fifo_out[ps_fifo_idx];
     end
 endgenerate
