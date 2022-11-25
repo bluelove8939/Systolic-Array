@@ -1,231 +1,100 @@
 `include "processing_element.v"
 
-/*
- * Systolic Array with Weight Stationary Dataflow
- *
- * Description
- *   For simplicity, this processor only utilizes integer values 
- *   (weight and input feature values)
- */
 
 module SystolicArrayWS #(
-    parameter ARRWIDTH  = 8,
-    parameter ARRHEIGHT = 8,
-    parameter WORDWIDTH = 8
+    parameter ARR_WIDTH  = 8,
+    parameter ARR_HEIGHT = 8,
+    parameter WORD_WIDTH = 8
 ) (
-    input clk,      // global clock signal (positive edge triggered)
-    input reset_n,  // global reset signal (asynchronous negative edge triggered)
-    input mode,     // systolic mode signal
+    input clk,      // global clock signal
+    input reset_n,  // global reset signal
+    
+    input [1:0] control,  // systolic array control signal
 
-    input [WORDWIDTH * ARRWIDTH - 1:0] w_in_vec,    // systolic array weight input port
-    input [WORDWIDTH * ARRHEIGHT - 1:0] a_in_vec,   // systolic array activation input port
+    input [WORD_WIDTH*ARR_WIDTH-1:0]  w_in_vec,  // weight input port
+    input [WORD_WIDTH*ARR_HEIGHT-1:0] a_in_vec,  // activation input port
 
-    output [WORDWIDTH*4*ARRWIDTH - 1:0] ps_out_vec  // systolic array partial sum output port
+    output [WORD_WIDTH*4*ARR_WIDTH-1:0] ps_out_vec  // partial sum output port
 );
 
-`include "params.v"
-
-
-// Split vector input and output port as an array
-wire [WORDWIDTH-1:0] w_in [0:ARRWIDTH-1];
-wire [WORDWIDTH-1:0] a_in [0:ARRHEIGHT-1];
-wire [WORDWIDTH*4-1:0] ps_out [0:ARRWIDTH-1];
+// Wire split (vector to array)
+wire [WORD_WIDTH*4-1:0] w_in   [0:ARR_WIDTH-1];
+wire [WORD_WIDTH-1:0]   a_in   [0:ARR_HEIGHT-1];
+wire [WORD_WIDTH*4-1:0] ps_out [0:ARR_WIDTH-1];
 
 genvar w_in_idx;
 genvar a_in_idx;
 genvar ps_out_idx;
 
 generate
-    for (w_in_idx = 0; w_in_idx < ARRWIDTH; w_in_idx = w_in_idx+1) begin
-        assign w_in[w_in_idx] = w_in_vec[(w_in_idx+1)*WORDWIDTH - 1 : w_in_idx * WORDWIDTH];
+    for (w_in_idx = 0; w_in_idx < ARR_WIDTH; w_in_idx = w_in_idx+1) begin
+        assign w_in[w_in_idx] = { {WORD_WIDTH*3{1'b0}}, w_in_vec[(w_in_idx+1)*WORD_WIDTH-1:w_in_idx*WORD_WIDTH] };
     end
 
-    for (a_in_idx = 0; a_in_idx < ARRHEIGHT; a_in_idx = a_in_idx+1) begin
-        assign a_in[a_in_idx] = a_in_vec[(a_in_idx+1)*WORDWIDTH - 1 : a_in_idx * WORDWIDTH];
+    for (a_in_idx = 0; a_in_idx < ARR_HEIGHT; a_in_idx = a_in_idx+1) begin
+        assign a_in[a_in_idx] = a_in_vec[(a_in_idx+1)*WORD_WIDTH-1:a_in_idx*WORD_WIDTH];
     end
 
-    for (ps_out_idx = 0; ps_out_idx < ARRWIDTH; ps_out_idx = ps_out_idx+1) begin
-        assign ps_out_vec[(ps_out_idx+1)*WORDWIDTH*4 - 1 : ps_out_idx*WORDWIDTH*4] = ps_out[ps_out_idx];
-    end
-endgenerate
-
-
-// Generate activation FIFO
-wire                 act_fifo_enable;                   // activation FIFO enable
-wire [WORDWIDTH-1:0] act_fifo_in      [0:ARRHEIGHT-1];  // activation FIFO input registers
-wire [WORDWIDTH-1:0] act_fifo_out     [0:ARRHEIGHT-1];  // activation FIFO output registers
-
-genvar act_fifo_idx;
-
-generate
-    for (act_fifo_idx = 0; act_fifo_idx < ARRHEIGHT; act_fifo_idx = act_fifo_idx+1) begin
-        // ShiftRegister #(
-        //     .SIZ(act_fifo_idx+1),
-        //     .WORDWIDTH(WORDWIDTH)
-        // ) act_fifo (
-        //     .clk(clk),
-        //     .reset_n(reset_n),
-        //     .enable(act_fifo_enable),
-        //     .in(act_fifo_in[act_fifo_idx]),
-        //     .out(act_fifo_out[act_fifo_idx])
-        // );
-        
-        assign act_fifo_out[act_fifo_idx] = act_fifo_in[act_fifo_idx];
-        assign act_fifo_in[act_fifo_idx]  = a_in[act_fifo_idx];
+    for (ps_out_idx = 0; ps_out_idx < ARR_WIDTH; ps_out_idx = ps_out_idx+1) begin
+        assign ps_out_vec[(ps_out_idx+1)*WORD_WIDTH*4-1:ps_out_idx*WORD_WIDTH*4] = ps_out[ps_out_idx];
     end
 endgenerate
 
 
-// Generate partial sum FIFO
-wire                   ps_fifo_enable;                   // partial sum FIFO enable
-wire [WORDWIDTH*4-1:0] ps_fifo_in      [0:ARRWIDTH-1];  // partial sum FIFO input registers
-wire [WORDWIDTH*4-1:0] ps_fifo_out     [0:ARRWIDTH-1];  // partial sum FIFO output registers
+// Generate systolic array
+wire [WORD_WIDTH-1:0]   a_in_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
+wire [WORD_WIDTH*4-1:0] d_in_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
 
-genvar ps_fifo_idx;
+wire [1:0] control_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
+wire [1:0] control_out_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
 
-generate
-    for (ps_fifo_idx = 0; ps_fifo_idx < ARRWIDTH; ps_fifo_idx = ps_fifo_idx+1) begin
-        // ShiftRegister #(
-        //     .SIZ(ARRWIDTH - ps_fifo_idx),
-        //     .WORDWIDTH(WORDWIDTH * 4)
-        // ) ps_fifo (
-        //     .clk(clk),
-        //     .reset_n(reset_n),
-        //     .enable(ps_fifo_enable),
-        //     .in(ps_fifo_in[ps_fifo_idx]),
-        //     .out(ps_fifo_out[ps_fifo_idx])
-        // );
-
-        assign ps_fifo_out[ps_fifo_idx] = ps_fifo_in[ps_fifo_idx];
-        assign ps_out[ps_fifo_idx] = ps_fifo_out[ps_fifo_idx];
-    end
-endgenerate
-
-
-// Generate processing elements
-wire pe_mode;     // PE mode
-wire arr_enable;  // PE array enable
-
-wire                   pe_enable_in  [0:ARRHEIGHT*ARRWIDTH-1];  // PE enable input ports
-wire [WORDWIDTH-1:0]   pe_weight_in  [0:ARRHEIGHT*ARRWIDTH-1];  // PE weight input ports
-wire [WORDWIDTH-1:0]   pe_act_in     [0:ARRHEIGHT*ARRWIDTH-1];  // PE activation input ports
-wire [WORDWIDTH*4-1:0] pe_ps_in      [0:ARRHEIGHT*ARRWIDTH-1];  // PE partial sum input ports
-
-wire                   pe_enable_out [0:ARRHEIGHT*ARRWIDTH-1];  // PE enable output ports
-wire [WORDWIDTH-1:0]   pe_act_out    [0:ARRHEIGHT*ARRWIDTH-1];  // PE activation output ports
-wire [WORDWIDTH-1:0]   pe_weight_out [0:ARRHEIGHT*ARRWIDTH-1];  // PE weight output ports
-wire [WORDWIDTH*4-1:0] pe_ps_out     [0:ARRHEIGHT*ARRWIDTH-1];  // PE partial sum output ports
-
-reg  [WORDWIDTH*4-1:0] global_ps_in;  // PE partial sum input value for first row
+wire [WORD_WIDTH-1:0]   a_out_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
+wire [WORD_WIDTH*4-1:0] d_out_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
 
 genvar pe_idx;
-genvar cidx;
-genvar ridx;
+genvar ro_idx;
+genvar co_idx;
 
 generate
-    for (pe_idx = 0; pe_idx < ARRWIDTH * ARRHEIGHT; pe_idx = pe_idx+1) begin
+    for (pe_idx = 0; pe_idx < ARR_HEIGHT*ARR_WIDTH; pe_idx = pe_idx+1) begin
         ProcessingElementWS #(
-            .WORDWIDTH(WORDWIDTH)
-        ) pe_arr (
-            .clk(clk),
-            .reset_n(reset_n),
-            .mode(pe_mode),
-
-            .enable_in(pe_enable_in[pe_idx]),
-            .w_in(pe_weight_in[pe_idx]),
-            .a_in(pe_act_in[pe_idx]),
-            .ps_in(pe_ps_in[pe_idx]),
-
-            .enable_out(pe_enable_out[pe_idx]),
-            .w_out(pe_weight_out[pe_idx]),
-            .a_out(pe_act_out[pe_idx]),
-            .ps_out(pe_ps_out[pe_idx])
+            .WORD_WIDTH(WORD_WIDTH)
+        ) pe_unit (
+            .clk(clk), .reset_n(reset_n),
+            .control(control_arr[pe_idx]),
+            .a_in(a_in_arr[pe_idx]), .d_in(d_in_arr[pe_idx]),
+            .control_out(control_out_arr[pe_idx]),
+            .a_out(a_out_arr[pe_idx]), .d_out(d_out_arr[pe_idx])
         );
     end
 
-    assign pe_act_in[0]    = act_fifo_out[0];  // input of first PE is from first FIFO
-    assign pe_enable_in[0] = arr_enable;       // array enable input is same with first PE enable input
-
-    for (ridx = 1; ridx < ARRHEIGHT; ridx = ridx+1) begin
-        assign pe_act_in[ridx * ARRWIDTH]   = act_fifo_out[ridx];                   // connect input of leftmost PE with fifo output
-        assign pe_enable_in[ridx * ARRWIDTH] = pe_enable_out[(ridx-1) * ARRWIDTH];  // connect enable_in of leftmost PE
-    end
-
-    for (cidx = 0; cidx < ARRWIDTH; cidx = cidx+1) begin
-        assign ps_fifo_in[cidx] = pe_ps_out[ARRWIDTH * (ARRHEIGHT-1) + cidx];  // bottom PE output is partial sum FIFO input
-        assign pe_ps_in[cidx] = global_ps_in;
-        assign pe_weight_in[cidx] = w_in[cidx];
-    end
-
-    for (cidx = 1; cidx < ARRWIDTH; cidx = cidx+1) begin       // column iteration
-        for (ridx = 0; ridx < ARRHEIGHT; ridx = ridx+1) begin  // row iteration
-            assign pe_act_in[ridx * ARRWIDTH + cidx]    = pe_act_out[ridx * ARRWIDTH + cidx - 1];     // connect a_in
-            assign pe_enable_in[ridx * ARRWIDTH + cidx] = pe_enable_out[ridx * ARRWIDTH + cidx - 1];  // connect enable_in
+    for (ro_idx = 0; ro_idx < ARR_HEIGHT-1; ro_idx = ro_idx+1) begin
+        for (co_idx = 0; co_idx < ARR_WIDTH; co_idx = co_idx+1) begin
+            assign a_in_arr[(ro_idx+1)*ARR_WIDTH+co_idx] = a_out_arr[ro_idx*ARR_WIDTH+co_idx];
         end
     end
 
-    for (cidx = 0; cidx < ARRWIDTH; cidx = cidx+1) begin       // column iteration
-        for (ridx = 1; ridx < ARRHEIGHT; ridx = ridx+1) begin  // row iteration
-            assign pe_weight_in[ridx * ARRWIDTH + cidx] = pe_weight_out[(ridx-1) * ARRWIDTH + cidx];  // connect w_in
-            assign pe_ps_in[ridx * ARRWIDTH + cidx]     = pe_ps_out[(ridx-1) * ARRWIDTH + cidx];      // connect ps_in
+    for (co_idx = 0; co_idx < ARR_WIDTH-1; co_idx = co_idx+1) begin
+        for (ro_idx = 0; ro_idx < ARR_HEIGHT; ro_idx = ro_idx+1) begin
+            assign d_in_arr[ro_idx*ARR_WIDTH+co_idx+1] = d_out_arr[ro_idx*ARR_WIDTH+co_idx];
+            assign control_arr[ro_idx*ARR_WIDTH+co_idx+1] = control_out_arr[ro_idx*ARR_WIDTH+co_idx];
         end
     end
 
+    for (co_idx = 0; co_idx < ARR_WIDTH; co_idx = co_idx+1) begin
+        assign d_in_arr[co_idx] = w_in[co_idx];
+        assign ps_out[co_idx] = d_out_arr[(ARR_HEIGHT-1)*ARR_WIDTH+co_idx];
+    end
+
+    for (ro_idx = 0; ro_idx < ARR_HEIGHT-1; ro_idx = ro_idx+1) begin
+        assign control_arr[ARR_WIDTH*(ro_idx+1)] = control_out_arr[ARR_WIDTH*ro_idx];
+    end
+
+    for (ro_idx = 0; ro_idx < ARR_HEIGHT; ro_idx = ro_idx+1) begin
+        assign a_in_arr[ARR_WIDTH*ro_idx] = a_in[ro_idx];
+    end
 endgenerate
 
-
-// Main operation of systolic array
-wire enable;
-assign enable = mode;
-
-assign act_fifo_enable = enable;
-assign ps_fifo_enable = enable;
-assign arr_enable = enable;
-
-assign pe_mode = mode;
-
-always @(posedge clk or negedge reset_n) begin : SA_MAIN
-    if (reset_n == 1'b0) begin
-        global_ps_in <= 0;
-    end
-end
-
-endmodule
-
-
-/*
- * Shift Register (FIFO)
- *
- * Parameters
- *   1) SIZ: length of register
- *   2) WORDWIDTH: bit-width of each word
- */
-
-module ShiftRegister #(
-    parameter SIZ = 8,
-    parameter WORDWIDTH = 8
-) (
-    input                  clk,      // global clock signal (positive edge triggered)
-    input                  reset_n,  // global reset signal (asynchronous negative edge triggered)
-    input                  enable,   // enable signal (shifts only if enable signal is 1)
-    input  [WORDWIDTH-1:0] in,       // input port
-    output [WORDWIDTH-1:0] out       // output port
-);
-
-reg [WORDWIDTH*(SIZ+1)-1:0] container;
-
-assign out = container[WORDWIDTH*(SIZ+1)-1:WORDWIDTH*SIZ];  // last register of the container is used as output signal generator
-
-always @(posedge clk or negedge reset_n) begin
-    if (reset_n == 1'b0) begin
-        container <= 0;
-    end 
-    
-    else begin
-        if (enable == 1'b1) begin
-            container[WORDWIDTH*(SIZ+1)-1:0] <= {container[WORDWIDTH*SIZ-1:0], in};
-        end
-    end
-end
+assign control_arr[0] = control;
     
 endmodule

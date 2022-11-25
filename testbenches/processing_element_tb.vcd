@@ -1,0 +1,96 @@
+$date
+	Fri Nov 25 19:49:33 2022
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module processing_element_tb $end
+$var reg 1 ! clk $end
+$upscope $end
+$scope module processing_element_tb $end
+$var reg 1 " reset_n $end
+$upscope $end
+$scope module processing_element_tb $end
+$var reg 2 # control [1:0] $end
+$upscope $end
+$scope module processing_element_tb $end
+$var reg 8 $ a_in [7:0] $end
+$upscope $end
+$scope module processing_element_tb $end
+$var reg 32 % d_in [31:0] $end
+$upscope $end
+$scope module processing_element_tb $end
+$var wire 8 & a_out [7:0] $end
+$upscope $end
+$scope module processing_element_tb $end
+$var wire 32 ' d_out [31:0] $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+bx '
+bx &
+bx %
+bx $
+bx #
+1"
+0!
+$end
+#5000000
+b0 '
+b0 &
+0"
+1!
+#10000000
+b0 #
+1"
+0!
+#15000000
+1!
+#20000000
+0!
+#25000000
+b11 '
+1!
+b11 %
+b1 #
+#30000000
+0!
+#35000000
+b100 '
+1!
+b100 %
+#40000000
+0!
+#45000000
+b101 '
+1!
+b101 %
+#50000000
+0!
+#55000000
+b10 &
+b0xxxxxxxxxxxxxxxxx '
+1!
+b10 $
+b100 %
+b10 #
+#60000000
+0!
+#65000000
+b1110 '
+1!
+#70000000
+0!
+#75000000
+1!
+#80000000
+0!
+#85000000
+1!

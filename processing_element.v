@@ -1,61 +1,100 @@
-/*
- * Processing Element with Weight Stationary Dataflow
- *
- * Description
- *   Weight stationary processing element for systolic array
- *   For simplicity, this processor only utilizes integer values 
- *   (weight and input feature values)
- */
+`include "adder.v"
+`include "multiplier.v"
+
 
 module ProcessingElementWS #(
-    parameter WORDWIDTH = 8  // dtype: int8
+    parameter WORD_WIDTH = 8
 ) (
-    input clk,      // global clock signal (positive edge triggered)
-    input reset_n,  // global reset signal (asynchronous negative edge triggered)
-    input mode,     // current mode (weight load mode or partial sum computation mode)
+    input clk,      // global clock signal
+    input reset_n,  // global reset signal
 
-    input                    enable_in,
-    input  [WORDWIDTH-1:0]   w_in,
-    input  [WORDWIDTH-1:0]   a_in,
-    input  [WORDWIDTH*4-1:0] ps_in,
+    input [1:0] control,  // control signal (00: IDLE, 01: WEIGHT_INPUT, 10: MULTIPLY)
 
-    output                   enable_out,
-    output [WORDWIDTH-1:0]   w_out,
-    output [WORDWIDTH-1:0]   a_out,
-    output [WORDWIDTH*4-1:0] ps_out
+    input  [WORD_WIDTH-1:0]   a_in,  // activation input port
+    input  [WORD_WIDTH*4-1:0] d_in,  // data(weight and partial num) input port
+
+    output [1:0] control_out,  // propagation of control signal to right-adjacent PE
+
+    output [WORD_WIDTH-1:0]   a_out,  // output port for activation propagation to right-adjacent PE
+    output [WORD_WIDTH*4-1:0] d_out   // output port for data(weight and partial sum) propatation to bottom-adjacent PE
 );
 
-`include "./params.v"
+// Registers and output assignment
+reg [WORD_WIDTH-1:0]   w_out_reg;   // weight output register
+reg [WORD_WIDTH-1:0]   a_out_reg;   // activation output register
+reg [WORD_WIDTH*4-1:0] ps_out_reg;  // partial sum output register
 
-reg enable_out_reg;
-reg [WORDWIDTH*2-1:0] weight;
-reg [WORDWIDTH-1:0]   activation;
-reg [WORDWIDTH*4-1:0] partial_sum;
+reg [1:0] control_out_reg;  // control propagation toward right-adjacent PE
 
-assign enable_out = enable_out_reg;
-assign w_out = weight[WORDWIDTH*2-1:WORDWIDTH];
-assign a_out = activation;
-assign ps_out = partial_sum;
+assign a_out = a_out_reg;
+assign d_out = (control[1] == 1'b0) ? { {WORD_WIDTH*3{1'b0}}, w_out_reg } : ps_out_reg;
 
-always @(posedge clk or negedge reset_n) begin : PSUM_CALC
-    if (reset_n == 1'b0) begin
-        weight <= 0;
-        activation <= 0;
-        partial_sum <= 0;
-        enable_out_reg <= 0;
+assign control_out = control_out_reg;
+
+
+// Multiplier Instantiation (weight and activation multiplication)
+wire [WORD_WIDTH-1:0] w_val,    // weight value
+                      a_val;    // activation value
+wire [WORD_WIDTH*2-1:0] y_val;  // weight * activaiton
+
+assign w_val = w_out_reg;
+assign a_val = a_in;
+
+Multiplier #(.WORD_WIDTH(WORD_WIDTH)) mul_unit (
+    .a(w_val), .b(a_val), .y(y_val)
+);
+
+
+// Adder Instantiation (partial sum accumulation)
+wire [WORD_WIDTH*4-1:0] ext_y_val,   // multiplication result extended to INT32 
+                        ps_out_val;  // partial sum output value
+wire ps_out_cout;  // overflow (unused)
+
+assign ext_y_val = { {WORD_WIDTH*2{1'b0}}, y_val };
+
+Adder #(.WORD_WIDTH(WORD_WIDTH*4)) add_unit (
+    .a(ext_y_val), .b(d_in), .y(ps_out_val), .cout(ps_out_cout)
+);
+
+
+// Main operation (proper operation with respect to control signal)
+always @(posedge clk or negedge reset_n) begin
+    if (!reset_n) begin
+        w_out_reg <= 0;
+        a_out_reg <= 0;
+        ps_out_reg <= 0;
+
+        control_out_reg <= 0;
     end 
     
     else begin
-        if (mode == MODE_WL) begin
-            weight[WORDWIDTH*2-1:0] <= {weight[WORDWIDTH-1:0], w_in};
-        end
+        control_out_reg <= control;
 
-        else if (mode == MODE_PS && enable_in == 1'b1) begin
-            activation <= a_in;
-            partial_sum <= ps_in + (weight[WORDWIDTH-1:0] * a_in);
-            enable_out_reg <= 1'b1;
-        end
+        case (control)
+            2'b00: begin  // IDLE
+                w_out_reg <= 0;
+                a_out_reg <= 0;
+                ps_out_reg <= 0;
+            end
+
+            2'b01: begin  // WEIGHT INPUT MODE
+                w_out_reg <= d_in[WORD_WIDTH-1:0];
+                a_out_reg <= 0;
+                ps_out_reg <= 0;
+            end
+
+            2'b10: begin  // COMPUTATION MODE
+                a_out_reg <= a_in;
+                ps_out_reg <= ps_out_val;
+            end
+
+            default: begin
+                w_out_reg <= 0;
+                a_out_reg <= 0;
+                ps_out_reg <= 0;
+            end
+        endcase
     end
 end
-    
+  
 endmodule
