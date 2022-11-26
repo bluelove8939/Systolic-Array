@@ -18,8 +18,7 @@ reg [1:0] control;
 reg [WORD_WIDTH-1:0] a_in;
 reg [WORD_WIDTH*4-1:0] d_in;
 
-wire [1:0] control_out_r;
-wire [1:0] control_out_b;
+wire [1:0] control_out;
 
 wire [WORD_WIDTH-1:0] a_out;
 wire [WORD_WIDTH*4-1:0] d_out;
@@ -28,24 +27,23 @@ ProcessingElementWS #(.WORD_WIDTH(WORD_WIDTH)) pe_unit (
     .clk(clk), .reset_n(reset_n),
     .control(control),
     .a_in(a_in), .d_in(d_in),
-    .control_out_r(control_out_r), .control_out_b(control_out_b),
+    .control_out(control_out),
     .a_out(a_out), .d_out(d_out)
 );
 
 // Instantiation of processing element2
 reg [WORD_WIDTH-1:0] a_in2;
 
-wire [1:0] control_out_r2;
-wire [1:0] control_out_b2;
+wire [1:0] control_out2;
 
 wire [WORD_WIDTH-1:0] a_out2;
 wire [WORD_WIDTH*4-1:0] d_out2;
 
 ProcessingElementWS #(.WORD_WIDTH(WORD_WIDTH)) pe_unit2 (
     .clk(clk), .reset_n(reset_n),
-    .control(control_out_b),
+    .control(control_out),
     .a_in(a_in2), .d_in(d_out),
-    .control_out_r(control_out_r2), .control_out_b(control_out_b2),
+    .control_out(control_out2),
     .a_out(a_out2), .d_out(d_out2)
 );
 
@@ -104,6 +102,9 @@ initial begin : PE_TEST
     a_in = 2;
     a_in2 = 3;
 
+    # CLOCK_PS
+    # CLOCK_PS
+    # CLOCK_PS
     # CLOCK_PS
     # CLOCK_PS
     # CLOCK_PS

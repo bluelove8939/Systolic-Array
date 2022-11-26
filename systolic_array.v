@@ -70,13 +70,13 @@ generate
 
     for (ro_idx = 0; ro_idx < ARR_HEIGHT-1; ro_idx = ro_idx+1) begin
         for (co_idx = 0; co_idx < ARR_WIDTH; co_idx = co_idx+1) begin
-            assign a_in_arr[(ro_idx+1)*ARR_WIDTH+co_idx] = a_out_arr[ro_idx*ARR_WIDTH+co_idx];
+            assign d_in_arr[(ro_idx+1)*ARR_WIDTH+co_idx] = d_out_arr[ro_idx*ARR_WIDTH+co_idx];
         end
     end
 
     for (co_idx = 0; co_idx < ARR_WIDTH-1; co_idx = co_idx+1) begin
         for (ro_idx = 0; ro_idx < ARR_HEIGHT; ro_idx = ro_idx+1) begin
-            assign d_in_arr[ro_idx*ARR_WIDTH+co_idx+1] = d_out_arr[ro_idx*ARR_WIDTH+co_idx];
+            assign a_in_arr[ro_idx*ARR_WIDTH+co_idx+1] = a_out_arr[ro_idx*ARR_WIDTH+co_idx];
             assign control_arr[ro_idx*ARR_WIDTH+co_idx+1] = control_out_arr[ro_idx*ARR_WIDTH+co_idx];
         end
     end
