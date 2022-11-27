@@ -1,0 +1,66 @@
+$date
+	Sun Nov 27 16:09:02 2022
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module fifo_tb $end
+$var reg 1 ! w_enable $end
+$upscope $end
+$scope module fifo_tb $end
+$var reg 1 " r_enable $end
+$upscope $end
+$scope module fifo_tb $end
+$var reg 8 # d_in [7:0] $end
+$upscope $end
+$scope module fifo_tb $end
+$var wire 1 $ full $end
+$upscope $end
+$scope module fifo_tb $end
+$var wire 1 % empty $end
+$upscope $end
+$scope module fifo_tb $end
+$var wire 8 & d_out [7:0] $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+bx &
+x%
+x$
+bx #
+x"
+x!
+$end
+#5000000
+0$
+1%
+b0 &
+#10000000
+b11 #
+1!
+0"
+#15000000
+0%
+b11 &
+#20000000
+b10 #
+#30000000
+b1 #
+#40000000
+1"
+0!
+#45000000
+b10 &
+#55000000
+b1 &
+#65000000
+1%
+b0 &
+#80000000
