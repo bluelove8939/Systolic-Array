@@ -3,9 +3,9 @@
 
 
 module AccumulatorUnit #(
-    parameter WORD_WIDTH = 8,   // data bitwidth
-    parameter FIFO_CAP   = 16,  // FIFO capacity
-    parameter PTR_WIDTH  = 4    // pointer bitwidth
+    parameter WORD_WIDTH = 32,   // data bitwidth
+    parameter FIFO_CAP   = 2,  // FIFO capacity
+    parameter PTR_WIDTH  = 1    // pointer bitwidth
 ) (
     input clk,
     input reset_n,

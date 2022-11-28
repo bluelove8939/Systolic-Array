@@ -65,9 +65,11 @@ end
 
 
 // Main operation
+integer idx;
+
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
-        for (integer idx = 0; idx < FIFO_CAP; idx = idx+1) begin
+        for (idx = 0; idx < FIFO_CAP; idx = idx+1) begin
             container[idx] <= 0;
         end
 
