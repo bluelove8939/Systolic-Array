@@ -11,28 +11,28 @@ module AdderWrapper #(
     output [WORD_WIDTH-1:0] y
 );
 
-reg cout_reg;
-reg [WORD_WIDTH-1:0] y_reg;
+// reg cout_reg;
+// reg [WORD_WIDTH-1:0] y_reg;
 
-assign cout = cout_reg;
-assign y = y_reg;
+// assign cout = cout_reg;
+// assign y = y_reg;
 
-wire cout_w;
-wire [WORD_WIDTH-1:0] y_w;
+// wire cout_w;
+// wire [WORD_WIDTH-1:0] y_w;
 
 Adder #(.WORD_WIDTH(WORD_WIDTH)) adder_unit (
-    .a(a), .b(b), .cout(cout_w), .y(y_w)
+    .a(a), .b(b), .cout(cout), .y(y)
 );
 
-always @(posedge clk or negedge reset_n) begin
-    if (!reset_n) begin
-        cout_reg <= 0;
-        y_reg <= 0;
-    end else begin
-        cout_reg <= cout_w;
-        y_reg <= y_w;
-    end
-end
+// always @(posedge clk or negedge reset_n) begin
+//     if (!reset_n) begin
+//         cout_reg <= 0;
+//         y_reg <= 0;
+//     end else begin
+//         cout_reg <= cout_w;
+//         y_reg <= y_w;
+//     end
+// end
     
 endmodule
 
