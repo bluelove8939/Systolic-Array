@@ -66,7 +66,7 @@ initial begin : PE_TEST
     reset_n = 1;
     control = 2'b00;
 
-    # HCLOCK_PS
+    // # HCLOCK_PS
 
     # CLOCK_PS
 
