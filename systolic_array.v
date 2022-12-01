@@ -45,8 +45,8 @@ endgenerate
 wire [WORD_WIDTH-1:0]   a_in_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
 wire [WORD_WIDTH*4-1:0] d_in_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
 
-wire [1:0] control_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
-wire [1:0] control_out_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
+// wire [1:0] control_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
+// wire [1:0] control_out_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
 
 wire [WORD_WIDTH-1:0]   a_out_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
 wire [WORD_WIDTH*4-1:0] d_out_arr [0:ARR_HEIGHT*ARR_WIDTH-1];
@@ -61,9 +61,10 @@ generate
                 .WORD_WIDTH(WORD_WIDTH)
             ) pe_unit (
                 .clk(clk), .reset_n(reset_n),
-                .control(control_arr[ro_idx*ARR_WIDTH+co_idx]),
+                // .control(control_arr[ro_idx*ARR_WIDTH+co_idx]),
+                .control(control),
                 .a_in(a_in_arr[ro_idx*ARR_WIDTH+co_idx]), .d_in(d_in_arr[ro_idx*ARR_WIDTH+co_idx]),
-                .control_out(control_out_arr[ro_idx*ARR_WIDTH+co_idx]),
+                // .control_out(control_out_arr[ro_idx*ARR_WIDTH+co_idx]),
                 .a_out(a_out_arr[ro_idx*ARR_WIDTH+co_idx]), .d_out(d_out_arr[ro_idx*ARR_WIDTH+co_idx])
             );
         end
@@ -78,7 +79,7 @@ generate
     for (co_idx = 0; co_idx < ARR_WIDTH-1; co_idx = co_idx+1) begin
         for (ro_idx = 0; ro_idx < ARR_HEIGHT; ro_idx = ro_idx+1) begin
             assign a_in_arr[ro_idx*ARR_WIDTH+co_idx+1] = a_out_arr[ro_idx*ARR_WIDTH+co_idx];
-            assign control_arr[ro_idx*ARR_WIDTH+co_idx+1] = control_out_arr[ro_idx*ARR_WIDTH+co_idx];
+            // assign control_arr[ro_idx*ARR_WIDTH+co_idx+1] = control_out_arr[ro_idx*ARR_WIDTH+co_idx];
         end
     end
 
@@ -87,15 +88,15 @@ generate
         assign ps_out[co_idx] = d_out_arr[(ARR_HEIGHT-1)*ARR_WIDTH+co_idx];
     end
 
-    for (ro_idx = 0; ro_idx < ARR_HEIGHT-1; ro_idx = ro_idx+1) begin
-        assign control_arr[ARR_WIDTH*(ro_idx+1)] = control_out_arr[ARR_WIDTH*ro_idx];
-    end
+    // for (ro_idx = 0; ro_idx < ARR_HEIGHT-1; ro_idx = ro_idx+1) begin
+    //     assign control_arr[ARR_WIDTH*(ro_idx+1)] = control_out_arr[ARR_WIDTH*ro_idx];
+    // end
 
     for (ro_idx = 0; ro_idx < ARR_HEIGHT; ro_idx = ro_idx+1) begin
         assign a_in_arr[ARR_WIDTH*ro_idx] = a_in[ro_idx];
     end
 endgenerate
 
-assign control_arr[0] = control;
+// assign control_arr[0] = control;
     
 endmodule

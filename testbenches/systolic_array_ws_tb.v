@@ -77,6 +77,7 @@ initial begin : PE_TEST
     
     $dumpvars(-1, clk);
     $dumpvars(-1, reset_n);
+    $dumpvars(-1, control);
 
     for (integer ridx = 0; ridx < ARR_HEIGHT; ridx = ridx+1) begin
         $dumpvars(-1, a_in[ridx]);

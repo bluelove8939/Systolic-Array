@@ -13,7 +13,7 @@ module ProcessingElementWS #(
     input  [WORD_WIDTH-1:0]   a_in,  // activation input port
     input  [WORD_WIDTH*4-1:0] d_in,  // data(weight and partial num) input port
 
-    output reg [1:0] control_out,  // propagation of control signal to right-adjacent PE
+    // output reg [1:0] control_out,  // propagation of control signal to right-adjacent PE
 
     output reg [WORD_WIDTH-1:0]   a_out,  // output port for activation propagation to right-adjacent PE
     output reg [WORD_WIDTH*4-1:0] d_out   // output port for data(weight and partial sum) propatation to bottom-adjacent PE
@@ -102,7 +102,7 @@ Adder #(.WORD_WIDTH(WORD_WIDTH*4)) add_unit (
 // Main operation (proper operation with respect to control signal)
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
-        control_out <= 0;
+        // control_out <= 0;
 
         a_out <= 0;
         d_out <= 0;
@@ -110,7 +110,7 @@ always @(posedge clk or negedge reset_n) begin
     end 
     
     else begin
-        control_out <= control;
+        // control_out <= control;
 
         case (control)
             2'b00: begin  // IDLE
