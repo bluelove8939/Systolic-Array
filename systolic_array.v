@@ -78,7 +78,7 @@ generate
     end
 
     for (co_idx = 0; co_idx < ARR_WIDTH; co_idx = co_idx+1) begin
-        assign d_in_arr[co_idx] = w_in[co_idx];
+        assign d_in_arr[co_idx] = (control == 2'b01) ? w_in[co_idx] : 0;
         assign ps_out[co_idx] = d_out_arr[(ARR_HEIGHT-1)*ARR_WIDTH+co_idx];
     end
 

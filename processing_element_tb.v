@@ -27,7 +27,7 @@ ProcessingElementWS #(.WORD_WIDTH(WORD_WIDTH)) pe_unit (
     .clk(clk), .reset_n(reset_n),
     .control(control),
     .a_in(a_in), .d_in(d_in),
-    .control_out(control_out),
+    // .control_out(control_out),
     .a_out(a_out), .d_out(d_out)
 );
 
